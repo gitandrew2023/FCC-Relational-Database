@@ -232,4 +232,48 @@ Append the suggested info the kitty_info.txt file. Use redirection instead of th
 Next, is the character count. Append Number of characters: to the file with a new line in front of the text. Use the method you have been using.
   echo -e "\nNumber of characters:" >> kitty_info.txt
 
-wc -m < kitty_ipsum_2.txt >> kitty_info.txt
+Using the pipe or input redirection method, append the character count of kitty_ipsum_2.txt to the kitty_info.txt file.
+  wc -m < kitty_ipsum_2.txt >> kitty_info.txt
+
+Excellent. Next, use grep to see how many variations of meow there are in kitty_ipsum_2.txt. Use the same pattern you used before and add the flag to show colors so it's easier to see.
+  grep --color 'meow[a-z]*' kitty_ipsum_2.txt
+
+It's the same variations as the other file. Append Number of times meow or meowzer appears: to the kitty_info.txt file with a new line in front of it like before.
+  echo -e "\nNumber of times meow or meowzer appears:" >> kitty_info.txt
+
+Use grep and wc in the terminal to append the suggested number to the kitty_info.txt file.
+  grep -o "meow[a-z]*" kitty_ipsum_2.txt | wc -l >> kitty_info.txt
+
+Next, use the terminal to append Lines that they appear on: to the kitty_info.txt file with a new line in front of the text.
+  echo -e "\nLines that they appear on:" >> kitty_info.txt
+
+Use grep and sed in the terminal to append the suggested line numbers to the kitty_info.txt file.
+  grep -n 'meow[a-z]*' kitty_ipsum_2.txt | sed -E 's/([0-9]+).*/\1/' >> kitty_info.txt
+
+Use grep to see how many variations of cat there are in kitty_ipsum_2.txt. Use the same pattern you used before and include the flag to show colors so it's easier to see.
+  grep --color 'cat[a-z]*' kitty_ipsum_2.txt
+
+Same variations as the other kitty ipsum file. Append Number of times cat, cats, or catnip appears: to the kitty_info.txt file. Use the method you have been using.
+  echo -e "\nNumber of times cat, cats, or catnip appears:" >> kitty_info.txt
+
+Use grep and wc in the terminal to append the suggested info to kitty_info.txt
+  grep -o 'cat[a-z]*' kitty_ipsum_2.txt | wc -l >> kitty_info.txt
+
+One more. Append Lines that they appear on: to it like you did for the others.
+  echo -e "\nLines that they appear on:" >> kitty_info.txt
+
+Use grep and sed in the terminal to append the suggested numbers to the kitty_info.txt file.
+  grep -n 'cat[a-z]*' kitty_ipsum_2.txt | sed -E 's/([0-9]+).*/\1/' >> kitty_info.txt
+
+The kitty_info file is done and it has some information about the two ipsum files. Next, you will create a small script to translate both them into doggy ipsum. It will be as simple as replacing all the cat references with similar words for dogs. In the terminal, use touch to create translate.sh.
+  touch translate.sh
+
+Give your new script executable permissions so you can run it in the terminal.
+  chmod +x translate.sh
+
+Add a shebang to the script that uses bash like you did for the other script you made.
+  #!/bin/bash
+
+The script will take a file as input that can be passed as an argument or read from stdin. Below the shebang, use cat to print the content of the first argument passed to the script.
+  cat $1
+
