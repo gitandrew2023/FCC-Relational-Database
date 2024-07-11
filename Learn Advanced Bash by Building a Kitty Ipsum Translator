@@ -277,3 +277,14 @@ Add a shebang to the script that uses bash like you did for the other script you
 The script will take a file as input that can be passed as an argument or read from stdin. Below the shebang, use cat to print the content of the first argument passed to the script.
   cat $1
 
+Run the script and use the first kitty ipsum file as an argument to see if it's working.
+  ./translate.sh kitty_ipsum_1.txt
+
+Try the same command using redirection to print the file.
+  ./translate.sh < kitty_ipsum_1.txt
+
+Looks like that is working. Try the cat and pipe method.
+  cat kitty_ipsum_1.txt | ./translate.sh
+
+Using any of those three methods as input is working. Time to start replacing some of the text with doggy ipsum. In your script file, pipe the input into a sed that replaces catnip with dogchow.
+
