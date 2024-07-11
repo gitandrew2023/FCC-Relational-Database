@@ -174,3 +174,62 @@ That matched the first digit it found on each line and replaced it with 1. Enter
 
 That didn't replace anything. Check the manual of sed quick to see if there's anything to help.
   man sed
+
+Looks like there's a lot of options with sed as well. There's a flag to use extended regular expressions. Add it to that previous command that didn't work so it recognizes the + in your pattern. The previous command was grep -n 'meow[a-z]*' kitty_ipsum_1.txt | sed 's/[0-9]+/1/'.
+  grep -n 'meow[a-z]*' kitty_ipsum_1.txt | sed -E 's/[0-9]+/1/'
+
+It worked that time. It replaced all the numbers at the start with a 1. Next, you will use a capture group in the regex to capture the numbers so you can use them in the replacement area. Enter the same command but use s/([0-9]+)/\1/ with sed to capture the numbers at the start. It will replace them with themselves for now.
+  grep -n 'meow[a-z]*' kitty_ipsum_1.txt | sed -E 's/([0-9]+)/\1/'
+
+That matched all the numbers and replaced them with the same numbers. All you need to do is match everything else on each line and replace it with only the numbers. Add .* at the end of the sed matching pattern so it matches everything, captures the numbers, and replaces everything with the captured numbers.
+  grep -n 'meow[a-z]*' kitty_ipsum_1.txt | sed -E 's/([0-9]+).*/\1/'
+
+There's your list of numbers for the kitty_info.txt file. Enter the same command and append the list of numbers to it.
+  grep -n 'meow[a-z]*' kitty_ipsum_1.txt | sed -E 's/([0-9]+).*/\1/' >> kitty_info.txt
+
+Take a look at the file. Hopefully it doesn't look too messy. You can reset a lesson at any time if it doesn't look right, or if you accidentally change something in one of the other files. There's one more group of words to find info on for this file. Use grep with the --color flag to see all the words that start with cat in the same file. Use a similar pattern that you used to find words starting with meow.
+  grep --color 'cat[a-z]*' kitty_ipsum_1.txt
+
+There's three variations of words starting with cat. Use echo with the -e flag to append Number of times cat, cats, or catnip appears: to the kitty_info.txt file. Put a new line at the beginning of the text like the other lines.
+  echo -e "\nNumber of times cat, cats, or catnip appears:" >> kitty_info.txt
+
+You will want to find the number of times those words appear again. First, use grep with the correct flag to put all the matches of the cat[a-z]* pattern on their own line.
+  grep -o 'cat[a-z]*' kitty_ipsum_1.txt
+
+Enter the same command and pipe the output into the command that outputs the count of those lines.
+  grep -o 'cat[a-z]*' kitty_ipsum_1.txt | wc -l
+
+That's a count of how many times cat, cats, or catnip appears in the file. Enter the same command and append the count to the kitty_info.txt file.
+  grep -o 'cat[a-z]*' kitty_ipsum_1.txt | wc -l >> kitty_info.txt
+
+Next, use echo to add the text Lines that they appear on: to the kitty_info.txt file again. Place a new line in front of the text like before.
+  echo -e "\nLines that they appear on:" >> kitty_info.txt
+
+The process to add the lines to the file will be the same as you did before. Start by using grep to match the cat words in the file and showing the line numbers with the output.
+  grep -n 'cat[a-z]*' kitty_ipsum_1.txt 
+
+That shows you the line numbers and text. You will have to use sed again to extract only the line numbers. Pipe the output of the last command into sed to do that. As a reminder, the sed pattern was 's/([0-9]+).*/\1/'.
+  grep -n 'cat[a-z]*' kitty_ipsum_1.txt | sed -E 's/([0-9]+).*/\1/'
+
+Awesome. Enter the last command and append the line numbers to the kitty_info.txt file.
+  grep -n 'cat[a-z]*' kitty_ipsum_1.txt | sed -E 's/([0-9]+).*/\1/' >> kitty_info.txt
+
+Hopefully your info file is looking good. Next, you want to do the same thing for the kitty_ipsum_2.txt file. Using echo in the terminal, append ~~ kitty_ipsum_2.txt info ~~ to the kitty_info.txt file. Put two new lines in front of the text this time.
+  echo -e "\n\n~~ kitty_ipsum_2.txt info ~~" >> kitty_info.txt
+
+The first piece of info you want to know is the number of lines in the file. Use the terminal to append Number of lines: to the file with a new line in front.
+  echo -e "\nNumber of lines:" >> kitty_info.txt
+
+Use cat with the pipe method to append the info to the kitty_info.txt file that it is asking for.
+  cat kitty_ipsum_2.txt | wc -l >> kitty_info.txt
+
+Nice job! Next, use the terminal to append Number of words: to the kitty_info.txt file. Put a new line in front of the text again.
+  echo -e "\nNumber of words:" >> kitty_info.txt
+
+Append the suggested info the kitty_info.txt file. Use redirection instead of the pipe method for the input this time.
+  wc -w < kitty_ipsum_2.txt >> kitty_info.txt
+
+Next, is the character count. Append Number of characters: to the file with a new line in front of the text. Use the method you have been using.
+  echo -e "\nNumber of characters:" >> kitty_info.txt
+
+wc -m < kitty_ipsum_2.txt >> kitty_info.txt
