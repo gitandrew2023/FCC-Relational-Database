@@ -200,7 +200,390 @@ case EXPRESSION in
   *) STATEMENTS ;;
 esac
 The expression you want is the $MAIN_MENU_SELECTION variable. You are expecting it to be a 1, 2, or 3 for your various menus. Add a case statement that takes users to their corresponding menus. The * is for when anything else is entered. Take users to the MAIN_MENU when the variable isn't a 1, 2, or 3.
-  
-  
+  case $MAIN_MENU_SELECTION in
+    1) RENT_MENU ;;
+    2) RETURN_MENU ;;
+    3) EXIT ;;
+    *) MAIN_MENU ;;
+  esac
+
+Run the script a few times and try out the different menus. Be sure to enter something other than one of the options to go to the main menu.
+  ./bike-shop.sh
+
+Add an argument to where you call MAIN_MENU in the case statement. It should be Please enter a valid option.. The next step will adjust the function so the message is printed when a user enters an invalid option.
+  *) MAIN_MENU "Please enter a valid option." ;;
+
+At the top of the MAIN_MENU function, add an if condition that checks if there's an argument ($1) passed to the function. If there is, print the message with a new line in front of it.
+  if [[ $1 ]]
+  then
+    echo -e "\n$1"
+  fi
+
+Run the script and enter an invalid option to see the message. Exit the program when you are done.
+  ./bike-shop.sh
+
+Looks good. Delete the echo "Rent Menu" from the RENT_MENU function so you can start adding the ability to rent a bike from the database.
+
+In the RENT_MENU function, add three single line comments; get available bikes, if no bikes available, and send to main menu, in that order.
+  RENT_MENU() {
+    #get available bikes
+    #if no bikes available
+    #send to main menu
+  }
+To get the bikes available, you need to query the database from your script. Below the "shebang", add a PSQL variable that looks like this: PSQL="psql -X --username=freecodecamp --dbname=bikes --tuples-only -c". You will then be able to use it to query the database like this: $($PSQL "<query_here>").
+  PSQL="psql -X --username=freecodecamp --dbname=bikes --tuples-only -c"
+
+Below the get available bikes comment. Create an AVAILABLE_BIKES variable that gets the bike_id, type, and size columns from the bikes table for the bikes that are available. Order the results by their bike_id column. Here's an example: AVAILABLE_BIKES=$($PSQL "<query_here>")
+  #get available bikes
+  AVAILABLE_BIKES=$($PSQL "SELECT bike_id,type,size FROM bikes WHERE available=true ORDER BY bike_id")
 
 
+Below the new variable, use echo to print it. Place it in double quotes so it prints any new lines.
+  echo "$AVAILABLE_BIKES"
+
+Run your script and go to the rent menu to see if the available bikes are being printed.
+  ./bike-shop.sh
+
+Awesome. In the psql prompt, set the available column to false for all the bikes so you can see what it prints when there's no bikes available.
+  UPDATE bikes SET available = false WHERE available = true;
+
+Run your script and go to the rent menu to see the output.
+  ./bike-shop.sh
+So if there's no bike available, the variable will be empty. In the script, below the if no bikes available comment, add an if condition that checks if the variable is empty. Use -z to check if it's empty. Place the send to main menu comment in its STATEMENTS area.
+  #if no bikes available
+  if [[ -z $AVAILABLE_BIKES ]]
+  then
+    #send to main menu
+
+  fi
+
+Below the comment in the if you just added. Send users to the main menu and give them the message, Sorry, we don't have any bikes available right now.
+  #if no bikes available
+  if [[ -z $AVAILABLE_BIKES ]]
+  then
+    #send to main menu
+    MAIN_MENU "Sorry, we don't have any bikes available right now."
+  fi
+
+Run the script and go to the rent menu to see the message. When you are done, exit the program.
+  ./bike-shop.sh
+
+If no bikes are available, you will get that message. Add an else to the if condition for when there is bikes available. In it, add four single line comments; display available bikes, ask for bike to rent, if input is not a number, and send to main menu.
+    #display available bikes
+    #ask for bike to rent
+    #if input is not a number
+    #send to main menu
+
+Below the display available bikes comment you just added, use echo to print Here are the bikes we have available: with a new line in front of the message
+    #display available bikes
+    echo -e "\nHere are the bikes we have available:"
+
+Move the echo command that prints all the available bikes below the message you just added.
+  #if no bikes available
+  if [[ -z $AVAILABLE_BIKES ]]
+  then
+    #send to main menu
+    MAIN_MENU "Sorry, we don't have any bikes available right now."
+  else
+    #display available bikes
+    echo -e "\nHere are the bikes we have available:"
+    echo "$AVAILABLE_BIKES"
+
+In the psql prompt, set all the bikes, except for the BMX bikes, back to true so you can see a list of bikes to rent.
+  UPDATE bikes SET available = true WHERE available = false and type != 'BMX';
+
+Run the script and go to the rent menu to see the list of bikes available.
+  ./bike-shop.sh
+
+Instead of directly printing the list, pipe the output into a while loop that reads each line. Here's how that looks:
+
+echo "$AVAILABLE_BIKES" | while read <VAR_1> <VAR_2> <VAR_3> <VAR_4> <VAR_5>
+do
+  <STATEMENTS>
+done
+It will read the first line of your AVAILABLE_BIKES variable into the five variables. Each variable being the next word in the line. Read each line into variables, BIKE_ID BAR TYPE BAR SIZE. In the <STATEMENTS> area, use echo to print the BIKE_ID, TYPE, and SIZE variables, in that order.
+    #display available bikes
+    echo -e "\nHere are the bikes we have available:"
+    echo "$AVAILABLE_BIKES" | while read BIKE_ID BAR TYPE BAR SIZE
+    do
+      echo $BIKE_ID $
+
+Run the script and go to the rent menu again to see if it's working.
+  ./bike-shop.sh
+
+It's working 😄 Adjust the echo command that prints the bike info so that the first line printed would look like this: 1) 27" Mountain Bike. The rest would look the same, but with their bike info. Make sure to escape any characters you need to.
+      do
+      echo "$BIKE_ID) $SIZE\" $TYPE Bike"
+    done
+
+Run the script and go to the rent menu again to see what it looks like now.
+./bike-shop.sh
+
+That's better. Below the ask for bike to rent comment, print Which one would you like to rent? with a new line in front of it.
+  #ask for bike to rent
+  echo -e "\nWhich one would you like to rent?"
+
+Just below that, add a command to read input into a variable named BIKE_ID_TO_RENT.
+      #ask for bike to rent
+    echo -e "\nWhich one would you like to rent?"
+    read BIKE_ID_TO_RENT
+
+Next, you want to find out how to test if the user input is a number. In the terminal, enter [[ a =~ [0-9] ]]; echo $? to see if a is a number. The conditional expression will run, and echo $? will print the exit code of it (the last command).
+  [[ a =~ [0-9] ]]; echo $?
+
+Back in your script, below the if input is not a number comment, add an if condition that checks if the input is not a number using the method you just practiced. Add the send to main menu comment in the then area of the if.
+      #if input is not a number
+    if [[ ! $BIKE_ID_TO_RENT =~ ^[0-9]+$ ]] 
+    then
+      #send to main menu
+
+    fi
+
+If the $BIKE_ID_TO_RENT variable is not a number, add the code to send users to the main menu with the message, That is not a valid bike number.
+      #send to main menu
+      MAIN_MENU "That is not a valid bike number."
+
+Run the script, go to the rent menu, and enter something that isn't a number to make sure it is working. When you are done, exit the program.
+./bike-shop.sh
+
+Add an else area for when the input is a number. Add these three single line comments in it; get bike availability, if not available, send to main menu.
+    #if input is not a number
+    if [[ ! $BIKE_ID_TO_RENT =~ ^[0-9]+$ ]] 
+    then
+      #send to main menu
+      MAIN_MENU "That is not a valid bike number."
+    else
+      #get bike availability
+      #if not available
+      #send to main menu
+    fi
+
+Below the get bike availability comment you just added, create a BIKE_AVAILABILITY variable. Set it equal to a query that gets the available column from the bikes table for the input. Also, make sure to only get the row if it is available.
+      #get bike availability
+      BIKE_AVAILABILITY=$($PSQL "SELECT available FROM bikes WHERE bike_id = $BIKE_ID_TO_RENT AND available = true;")
+
+Right below the variable you just created, use echo to print it so you can see what it looks like.
+      echo $BIKE_AVAILABILITY
+
+Run the script a few times, go to the rent menu, enter a bike that is available and one that isn't. You should have some BMX bikes that aren't available.
+  ./bike-shop.sh
+
+The variable will be t or empty. Below the if not available comment, add an if condition that checks if it's empty. Put the send to main menu comment in it's statements area.
+        # if not available
+      if [[ -z $BIKE_AVAILABILITY ]]
+      then
+        # send to main menu
+      fi
+
+
+In the if condition you just added, send users to the main menu with the message That bike is not available. if they input a number that isn't available.
+        # send to main menu
+        MAIN_MENU "That bike is not available."
+
+Remove the line where you print the BIKE_AVAILABILITY variable. You don't need it anymore.
+
+Run the script and go to the rent menu, enter a bike that isn't available to make sure it's working. When you are done, exit the program.
+  ./bike-shop.sh
+
+In the psql prompt, set all the bikes availability back to true.
+UPDATE bikes SET available = true;
+
+In your script, add an else for when a bike is available. Add these four comments in the else area get customer info, if customer doesn't exist, get new customer name, and insert new customer.
+      else
+        #get customer info
+        #if customer doesn't exist
+        #get new customer name
+        #insert new customer
+
+As the comments say, you need to get the customer info and find out if they are an existing customer. Below the get customer info comment, print What's your phone number? with a new line in front of it.
+        #get customer info
+        echo -e "\nWhat's your phone number?"
+
+Below the line you just printed, read input into a PHONE_NUMBER variable. Since the phone number is unique, you can use it to identify a customer.
+  read PHONE_NUMBER
+
+With the customer's phone number, you can get their name. Below where you get the phone number, create a CUSTOMER_NAME variable that gets the customers name from the database using the phone number.
+  CUSTOMER_NAME=$($PSQL "SELECT name FROM customers WHERE phone='$PHONE_NUMBER';")
+
+If the customer is in the database with the phone number used, the variable will be set to the name. If not, it will be empty. Add an if condition below the if customer doesn't exist comment that checks if the variable is empty. Place the next two comments in the then area.
+          #if customer doesn't exist
+        if [[ -z $CUSTOMER_NAME ]]
+        then
+          #get new customer name
+          
+          #insert new customer
+        fi
+
+If the customer isn't in the database, you need to get their name so you can add them. Below the get new customer name comment, print What's your name? with a new line in front of the message.
+  echo -e "\nWhat's your name?"
+
+Below the question you just printed, read input into a variable named CUSTOMER_NAME.
+  read CUSTOMER_NAME
+  
+You have the two pieces of information you need. Below the insert new customer comment, create an INSERT_CUSTOMER_RESULT variable that inserts the customer into the database.
+          #insert new customer
+          INSERT_CUSTOMER_RESULT=$($PSQL "INSERT INTO customers (name,phone) VALUES('$CUSTOMER_NAME','$PHONE_NUMBER');")
+
+Run your script and go to the rent menu. Pick a bike to rent, then enter 555-5555 when it asks for a phone number, and Me when it asks for your name.
+  ./bike-shop.sh
+
+That should have added a new customer to the database. In the psql prompt, view all the data in the customers table to see if it's working.
+  SELECT * FROM customers;
+
+Excellent. View all the data in the rentals table.
+  SELECT * FROM rentals;
+
+So you still need to add the rental to the rentals table when a bike is picked out. View all the data in the bikes table.
+  SELECT * FROM bikes;
+
+And set the available column to false for the bike rented. Below the end of the if statement that inserts a new customer, add five more comments; get customer_id, insert bike rental, set bike availability to false, get bike info, and send to main menu
+  UPDATE bikes SET available=false;
+
+        # get customer_id
+
+        # insert bike rental
+
+        # set bike availability to false
+
+        # get bike info
+        
+        # send to main menu
+
+
+You're getting close to done with the rent functionality. To add a rental to the database, you need the customer ID. Below the get customer_id comment, create a CUSTOMER_ID variable that gets the customer_id using the phone number.
+        # get customer_id
+        CUSTOMER_ID=$($PSQL "SELECT customer_id FROM customers WHERE phone='$PHONE_NUMBER';")
+
+Now that you have the bike ID and customer ID, you can add the rental to the database. Below the insert bike rental comment, create a INSERT_RENTAL_RESULT variable that adds the rental to the database.
+
+        # insert bike rental
+        INSERT_RENTAL_RESULT=$($PSQL "INSERT INTO rentals (customer_id,bike_id) VALUES($CUSTOMER_ID,$BIKE_ID_TO_RENT);")
+
+That should add the rental to the database. The last thing to do is set available to false for the bike. Below the set bike availability to false comment, create a SET_TO_FALSE_RESULT variable that does that.
+  SET_TO_FALSE_RESULT=$($PSQL "UPDATE bikes SET available=false WHERE bike_id=$BIKE_ID_TO_RENT;")
+
+Run the script and go to the rent menu. Pick the first bike on the list and enter 555-5555 when it asks for a phone number again. That phone number should already be in the database, so it won't ask for a name or insert a customer.
+  ./bike-shop.sh
+
+In the psql prompt, view all the data in the rentals table. There should be a new rental.
+        # set bike availability to false
+        SET_TO_FALSE_RESULT=$($PSQL "UPDATE bikes SET available=false WHERE bike_id=$BIKE_ID_TO_RENT;")
+
+In the psql prompt, view all the data in the rentals table. There should be a new rental.
+  select * from rentals;
+
+The rental was added and the date_rented was filled in automatically. 😄 Next, view all the data in the bikes table. Order the results by bike_id
+  select * from bikes order by bike_id;
+
+
+The available column was set to false for the bike you rented. The last thing to do is give a nice message about the rental. Below the get bike info comment, create a BIKE_INFO variable that gets the size and type, in that order, of the bike rented.
+        # get bike info
+        BIKE_INFO=$($PSQL "SELECT size,type FROM bikes WHERE bike_id=$BIKE_ID_TO_RENT;")
+
+
+Below the variable you just created, use echo to print it.
+        # send to main menu
+        echo $BIKE_INFO
+
+Run the script again and go to the rent menu, there should now be one less bike displayed. Pick the next bike on the list and rent it using the customer with phone number 555-5555 again so you can see the variable.
+./bike-shop.sh
+
+It should have printed 28 | Mountain. The message you want to print after someone rents a bike would have said I have put you down for the 28" Mountain Bike, Me.. You need to format that variable for the message. The sed command can be used to replace characters and patterns in text. It looks like this: sed s/<regex_pattern_to_replace>/<characters_to_replace_with>/<regex_flags>. In the terminal, enter echo '28 | Mountain' | sed 's/ /=/g' to practice.
+  echo '28 | Mountain' | sed 's/ /=/g'
+
+The command you used, "piped" a string (28 | Mountain) to the sed command, where it replaced all the spaces with =. Enter the same command, but replace all the spaces with nothing.
+  echo '28 | Mountain' | sed 's/ //g'
+
+The g regex flag stands for "global". It will replace all instance of the pattern. In this case, it replaced all the spaces. Enter the same command but without that flag.
+  echo '28 | Mountain' | sed 's/ //'
+
+That time, only the first instance of the pattern was replaced. The first space was removed. Enter the same command, but replace the first instance of  | (<space>|) with nothing.
+  echo '28 | Mountain' | sed 's/ |//'
+
+Enter the same command, but make the output look like how you want in the message, 28" Mountain.
+  echo '28 | Mountain' | sed 's/ |/"/'
+
+Back in your script, where you echo the BIKE_INFO, pipe the output into a sed command that replaces  | (<space>|) with " so the text will read <SIZE>" <TYPE>. 28 | Mountain would become 28" Mountain, for instance.
+        # send to main menu
+        echo $BIKE_INFO | sed 's/ |/"/'
+
+
+Run the script and rent another bike using the customer with phone number 555-5555 again. Make sure the bike info printed looks like you want.
+  ./bike-shop.sh
+
+Now it is formatted for the message. Take that echo command and the part that formats it, put it in a sub shell, and set the output into a variable named BIKE_INFO_FORMATTED. Here's an example: BIKE_INFO_FORMATTED=$(<formatted info here>)
+  BIKE_INFO_FORMATTED=$(echo $BIKE_INFO | sed 's/ |/"/')
+
+What you put in the subshell ($(...)) will be executed, and the result of it will replace the subshell. In this case, the formatted bike info was printed when you ran the script before, so the BIKE_INFO_FORMATTED variable will be set to that. Below the send to main menu comment, send users to the main menu with a message that would print I have put you down for the 28" Mountain Bike, Me. if Me rented the 28 inch Mountain Bike.
+
+  MAIN_MENU "I have put you down for the $BIKE_INFO_FORMATTED Bike, $CUSTOMER_NAME."
+
+
+Run the script and rent the next bike on the list. Use the customer with 555-5555 as their phone number. When you are done, exit the program.
+  ./bike-shop.sh
+
+There's an extra space around the customer's name. You can use sed again to fix that. In the terminal, enter echo ' M e ' to print M e with spaces around it to see if you can find out how.
+  echo ' M e ' | sed 's/ //g'
+
+It printed, but you can only assume there's a space at the end. Place the last command in a subshell with quotes around it. Put a period right after the subshell and echo the whole thing in the terminal. Here's how it looks: echo "$(echo ' M e ')."
+  echo "$(echo ' M e ')."
+
+Now you can be certain there's a space at the end. Within the subshell of the last command, use a pipe and the sed command to replace the first space with no space. Here's the sed replacement pattern you want: 's/ //'.
+  echo "$(echo ' M e ' | sed 's/ //')."
+
+That removed only the first space it found. Change the previous command to replace all instances of a space instead of just the first one.
+  echo "$(echo ' M e ' | sed 's/ //g')."
+
+That replaced all the spaces. You only had an extra space at the beginning of the customer name. Add a ^ in front of the space in the replacement pattern of the last command to only replace a space at the beginning of the text.
+  echo "$(echo ' M e ' | sed 's/^ //g')."
+
+The caret you added means that's the start of the text. So it will replace a space only if it's at the beginning. Enter the last command, but add two more spaces (three total) at the beginning of the text.
+  echo "$(echo '   M e ' | sed 's/^ //g')."
+
+The ^  (^<space>) pattern only replaced the first space. Add * at the end of the matching pattern to replace all spaces at the beginning of text.
+  echo "$(echo '   M e ' | sed 's/^ *//g')."
+
+The customer name only had an extra space at the beginning. Unsure as to why, but there may be others with extra spaces at the end as well. You can match the end of text with $. Change the matching pattern of the last command so it replaces a single space at the end. The pattern is  $ (<space>$).
+  echo "$(echo '   M e ' | sed 's/ $//g')."
+
+Add two more spaces to the end of the text in the previous command (three spaces total).
+  echo "$(echo '   M e   ' | sed 's/ $//g')."
+
+The pattern only replaces a single space at the end. Change the last command so it replaces all spaces at the end of the text.
+  echo "$(echo '   M e   ' | sed 's/ *$//g')."
+
+That replaced all the spaces at the end of the text. You can use | as an "or" operator in a matching pattern to replace one pattern or another. Use it to change the matching pattern so it would replace any amount of spaces at the beginning and any amount of spaces at the end of the text.
+  echo "$(echo '   M e   ' | sed 's/^ *| *$//g')."
+
+That didn't work. It doesn't like that "or" (|) operator for some reason. Check the manual of the sed command to see if you can find anything.
+  man sed
+
+Somewhere in there is a flag for using extended regular expressions with sed. That might work. Add it to the echo "$(echo '   M e   ' | sed 's/^ *| *$//g')." command that didn't work to find out.
+  echo "$(echo '   M e   ' | sed -E 's/^ *| *$//g')."
+
+That trimmed all spaces from the front and end of the text. Back in the last message of your script, place the CUSTOMER_NAME variable in a subshell, echo and pipe it into a sed command that removes all spaces from the front and back. Use the same method you used in the terminal.
+          # send to main menu
+        MAIN_MENU "I have put you down for the $BIKE_INFO_FORMATTED Bike, $(echo $CUSTOMER_NAME | sed -E 's/^ *| *$//g')."
+
+Run the script and rent another bike with the customer whose phone number is 555-5555. When you are done, exit the program.
+  ./bike-shop.sh
+
+Run the script again. Rent another bike, use 000-0000 as the phone number this time, and Test as the name to create a new customer. When you are done, exit the program.
+  ./bike-shop.sh
+
+Run the script again. Rent another bike with the customer you just created. When you are done, exit the program.
+  ./bike-shop.sh
+
+
+In the psql prompt, view all the data in your bikes table in order by the bike_id.
+  select * from bikes order by bike_id;
+
+There should be two bikes left available to rent. Next, look at all the data in the customers table.
+  select * from customers;
+
+There should two customers in that table now. Lastly, look at all the data in the rentals table.
+  select * from rentals;
+
+The rent functionality looks like it all works. Delete the echo Return Menu line in the RETURN_MENU function so you can get started with that.
+
+Add three single line comments to the return menu function; get customer info, if not found, and send to main menu, in that order.
